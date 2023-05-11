@@ -6,7 +6,6 @@ date: "2023-05-11"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-ttttttt
 ```
 
 ## R Markdown
@@ -16,15 +15,21 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
-summary(cars)
+library(readtext)
+library(tidyverse)
+
+corp_aiact <- readtext("AI_Act_Commission.pdf")
+
+corp_council <- readtext("Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
 ```
 
 ## Including Plots
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r echo=FALSE}
+corp_aiact
+corp_council
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
