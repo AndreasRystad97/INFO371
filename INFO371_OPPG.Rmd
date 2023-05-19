@@ -26,30 +26,44 @@ library(ggplot2)
 library(tidytext)
 library(pdftools)
 
-corp_aiact <- readtext("AI_Act_Commission.pdf")
-corp_council <- readtext("Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
+#corp_aiact <- readtext("AI_Act_Commission.pdf")
+#corp_council <- readtext("Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
 
 # for det er fredag min venn
-commi_pdf <- pdftools::pdf_text(pdf = "AI_Act_Commission.pdf")
-counc_pdf <- pdftools::pdf_text(pdf = "Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
+#commi_pdf <- pdftools::pdf_text(pdf = "AI_Act_Commission.pdf")
+#counc_pdf <- pdftools::pdf_text(pdf = "Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
+
+
+dat_raw <- readtext("Commission consultation all/*")
+
+table(dat_raw$doc_id)
+
+dat <- dat_raw |> 
+    mutate(text = str_squish(text)) |> # remove unnecessary whitespace
+    separate(doc_id, into = c("id", "actor", "type_actor"),
+             sep = "_") # create docvars based on file names
+
+# remove PDF ending in document-level variable
+dat <- dat |> 
+    mutate(type_actor = str_remove_all(type_actor, "\\.pdf"))
+
+
+# save as RDS file
+saveRDS(dat, "data_corpus_aiact.rds")
 ```
 
 
 ## Visualisering av PDFene
 
 ```{r echo=FALSE}
-corp_aiact
-corp_council
-
-
-commi_pdf
-counc_pdf
+ai_act <- readRDS("data_corpus_aiact.rds")
+ai_act
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ```{r}
-
+toks_act <- ntoken(ai_act)
 ```
 
 ```{r}
