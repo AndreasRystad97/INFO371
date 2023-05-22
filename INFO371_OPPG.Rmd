@@ -25,6 +25,10 @@ library(dplyr)
 library(ggplot2)
 library(tidytext)
 library(pdftools)
+library(quanteda.textmodels)
+library(quanteda.textstats)
+install.packages("seededlda")
+library(seededlda)
 
 #corp_aiact <- readtext("AI_Act_Commission.pdf")
 #corp_council <- readtext("Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
@@ -67,10 +71,57 @@ toks_act <- ntoken(ai_act)
 ```
 
 ```{r}
+sim_1 <- corpus(ai_act) %>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_remove(pattern = stopwords('en')) %>%
+  tokens_wordstem() %>%
+  dfm() %>%
+  dfm_group (groups = actor) %>%
+  textstat_simil(method = 'cosine', margin ='documents')
+sim_1
 
 ```
 
 ```{r}
+#Topic modelling
+topic_council <- corpus(corp_council) %>%
+    tokens(remove_punct = TRUE,
+           remove_symbol = TRUE,
+           remove_numbers = TRUE) %>%
+  tokens_remove(pattern = c(stopwords('en'),
+                            'xx','shall','b',
+                            'en','use','put',
+                            'ec','rb', 'ek',
+                            'set','datum')) %>%
+  tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+  dfm() %>%
+  dfm_trim(min_termfreq = 0.8,
+           termfreq_type = "quantile")
+
+topic_aiact <- corpus(corp_aiact) %>%
+    tokens(remove_punct = TRUE,
+           remove_symbol = TRUE,
+           remove_numbers = TRUE) %>%
+  tokens_remove(pattern = c(stopwords('en'),
+                            'xx','shall','b',
+                            'en','use','put',
+                            'ec','rb', 'ek',
+                            'set','datum')) %>%
+  tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+  dfm() %>%
+  dfm_trim(min_termfreq = 0.8,
+           termfreq_type = "quantile")
+
+tmod_lda_council <- textmodel_lda(topic_council, k = 3)
+tmod_lda_aiact <- textmodel_lda(topic_aiact, k = 3)
+
+terms(tmod_lda_council, 10)
+terms(tmod_lda_aiact, 10)
 
 ```
 
+```{r}
+terms(tmod_lda_council, 10)
+terms(tmod_lda_aiact, 10)
+print
+  ```
