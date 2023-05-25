@@ -17,6 +17,12 @@ When you click the **Knit** button a document will be generated that includes bo
 ## Library og load ting
 
 ```{r}
+#install.packages("keyATM")
+#install.packages('seededlda')
+#install.packages('readtext')
+#install.packages('quanteda')
+#install.packages('tidytext')
+
 library(readtext)
 library(tidyverse)
 library(quanteda)
@@ -27,9 +33,7 @@ library(tidytext)
 library(pdftools)
 library(quanteda.textmodels)
 library(quanteda.textstats)
-install.packages("keyATM")
 library(keyATM)
-
 library(seededlda)
 
 #corp_aiact <- readtext("AI_Act_Commission.pdf")
