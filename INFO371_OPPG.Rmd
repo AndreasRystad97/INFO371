@@ -88,13 +88,17 @@ topic_council <- corpus(corp_council) %>%
     tokens(remove_punct = TRUE,
            remove_symbol = TRUE,
            remove_numbers = TRUE) %>%
+      tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+  #Legg til unødvendige terms her
   tokens_remove(pattern = c(stopwords('en'),
                             'xx','shall','b',
                             'en','use','put',
                             'ec','rb', 'ek',
-                            'set','datum')) %>%
-  tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+                            'set','datum', 'iii',
+                            'oj', 'also','can',
+                            'p')) %>%
   dfm() %>%
+  #Endre termfreq, 0.8 = top 20% most frequent
   dfm_trim(min_termfreq = 0.8,
            termfreq_type = "quantile")
 
@@ -102,26 +106,29 @@ topic_aiact <- corpus(corp_aiact) %>%
     tokens(remove_punct = TRUE,
            remove_symbol = TRUE,
            remove_numbers = TRUE) %>%
+    tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+  #Legg til unødvendige terms her
   tokens_remove(pattern = c(stopwords('en'),
                             'xx','shall','b',
                             'en','use','put',
                             'ec','rb', 'ek',
-                            'set','datum')) %>%
-  tokens_replace(pattern = lexicon::hash_lemmas$token, replacement = lexicon::hash_lemmas$lemma)%>%
+                            'set','datum', 'iii',
+                            'oj', 'also','can',
+                            'p')) %>%
   dfm() %>%
+  #Endre termfreq, 0.8 = top 20% most frequent
   dfm_trim(min_termfreq = 0.8,
            termfreq_type = "quantile")
 
-tmod_lda_council <- textmodel_lda(topic_council, k = 3)
-tmod_lda_aiact <- textmodel_lda(topic_aiact, k = 3)
+#k = number of topics
+tmod_lda_council <- textmodel_lda(topic_council, k = 8)
+tmod_lda_aiact <- textmodel_lda(topic_aiact, k = 8)
 
+# tallet = number of terms
 terms(tmod_lda_council, 10)
 terms(tmod_lda_aiact, 10)
 
 ```
 
 ```{r}
-terms(tmod_lda_council, 10)
-terms(tmod_lda_aiact, 10)
-print
-  ```
+```
