@@ -141,7 +141,7 @@ textplot_scale1d(tmod_wf, margin = "features",
 
 # Estimated theta = estimated document positions
 # Estimated beta = estimated feature marginal effects
-# Estimated psi = estimated word fixed effects
+# Estimated psi = estimated word fixed effects.
 
 
 
