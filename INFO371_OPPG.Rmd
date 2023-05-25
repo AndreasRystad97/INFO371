@@ -27,7 +27,9 @@ library(tidytext)
 library(pdftools)
 library(quanteda.textmodels)
 library(quanteda.textstats)
-install.packages("seededlda")
+install.packages("keyATM")
+library(keyATM)
+
 library(seededlda)
 
 #corp_aiact <- readtext("AI_Act_Commission.pdf")
@@ -128,7 +130,16 @@ tmod_lda_aiact <- textmodel_lda(topic_aiact, k = 8)
 terms(tmod_lda_council, 10)
 terms(tmod_lda_aiact, 10)
 
+topic_council$topic <- topics(tmod_lda_council)
+table(topic_council$topic)
+
+topic_aiact$topic <- topics(tmod_lda_aiact)
+table(topic_aiact$topic)
+
 ```
 
 ```{r}
+#Seeded LDA (KeyATM)
+seeded_council <- corpus(corp_council) %>%
+  
 ```
