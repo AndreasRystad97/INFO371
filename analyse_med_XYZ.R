@@ -137,7 +137,8 @@ textplot_scale1d(tmod_wf, margin = "features",
                                  "world", "appropriations", "budget",
                                  "deleted", "year", "regulation",
                                  "multiannual", "sensetive", "paper",
-                                 "0.760", "machine", "prospective"))
+                                 "0.760", "machine", "prospective",
+                                 "22"))
 
 # Estimated theta = estimated document positions
 # Estimated beta = estimated feature marginal effects
