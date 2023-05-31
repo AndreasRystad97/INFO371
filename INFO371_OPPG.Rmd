@@ -157,10 +157,6 @@ udmodel_english <- udpipe_load_model(file = 'english-ewt-ud-2.5-191206.udpipe')
 udmodel_council <- udpipe_annotate(udmodel_english, x = corp_council$text) %>%
   as.data.frame(udmodel_council)
 
-
-str(udmodel_council)
-
-
 #Cleaning the lemma column
 #list of stopwords
 stops <- c(stopwords('en'),
@@ -187,4 +183,8 @@ udmodel_council$lemma <- tokens_replace(udmodel_council$lemma,
 
 #regex to remove rows with unwanted tokens
 udmodel_council <- udmodel_council[-grep('[^A-Za-z]',udmodel_council$lemma),]
+```
+
+```{r}
+
 ```
