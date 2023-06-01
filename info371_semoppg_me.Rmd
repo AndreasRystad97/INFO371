@@ -1,0 +1,194 @@
+---
+title: "info371_semoppg_2"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+date: "2023-06-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(readtext)
+library(tidyverse)
+library(quanteda)
+library(stopwords)
+library(dplyr)
+library(ggplot2)
+library(tidytext)
+library(quanteda.textmodels)
+library(quanteda.textplots)
+library(topicmodels)
+library(tidyr)
+library(syuzhet)
+library(tibble)
+library(pdftools)
+```
+
+
+```{r}
+### Read PDFs
+dat_raw <- readtext("Commission consultation all/*")
+
+table(dat_raw$doc_id)
+
+dat <- dat_raw |> 
+  mutate(text = str_squish(text)) |> # remove unnecessary whitespace
+  separate(doc_id, into = c("id", "actor", "type_actor"),
+           sep = "_") # create docvars based on file names
+# remove PDF ending in document-level variable
+dat <- dat |> 
+  mutate(type_actor = str_remove_all(type_actor, "\\.pdf"))
+# save as RDS file
+saveRDS(dat, "data_corpus_aiact.rds")
+
+ai_act <- readRDS("data_corpus_aiact.rds")
+
+
+## Lag corpuser, av hele, og begge hver for seg
+
+corp_aiact <- corpus(ai_act)
+corp_aiact
+
+## Tokenize dokumentet og gjør til dfm
+
+toks_act <- tokens(corp_aiact, remove_punct = TRUE) %>%
+  tokens_remove(stopwords(language = "en"))
+
+dfm_act <- dfm(toks_act)
+```
+
+
+```{r}
+### Sentiment analyzis
+
+# Decided to just load the two texts to a variable each with pdf_text, 
+# because I want to compare the two side-by-side.
+
+proposed_txt <- pdf_text("AI_Act_Commission.pdf")
+revised_txt <- pdf_text("Council statement Fall  2022 - ST-14954-2022-INIT_en.pdf")
+
+# Load it into a dataframe
+df <- data.frame(Text = c(proposed_txt, revised_txt),
+                 Version = c(rep("Proposed", length(proposed_txt)),
+                             rep("Revised", length(revised_txt))))
+
+# Perform sentiment analysis using the get_sentiment() function
+df1 <- df %>%
+  mutate(sentiment_scores = get_sentiment(Text))
+
+# Visualize the sentiment scores using a boxplot
+ggplot(df1, aes(x = Version, y = sentiment_scores)) +
+  geom_boxplot() +
+  labs(x = "Version", y = "Sentiment Score") +
+  theme_minimal()
+```
+
+
+```{r}
+### Keyword extraction
+
+# Tokenize the text
+df_tokens <- df %>%
+  unnest_tokens(word, Text)
+
+# Filter out stopwords
+df_tokens <- df_tokens %>%
+  anti_join(stop_words)
+
+# Remove numbers and plural versions of words
+df_tokens <- df_tokens %>%
+  filter(!str_detect(word, "^\\d+$"), !str_detect(word, "s$"))
+
+# Count the frequency of each word
+word_freq <- df_tokens %>%
+  count(Version, word, sort = TRUE)
+
+# Select the top N keywords for each version
+top_keywords <- word_freq %>%
+  group_by(Version) %>%
+  top_n(n = 30, wt = n)
+
+# Visualize the top keywords
+ggplot(top_keywords, aes(x = n, y = reorder(word, n), fill = Version)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Version, scales = "free_y") +
+  labs(x = "Frequency", y = NULL) +
+  theme_minimal()
+```
+
+
+```{r}
+### LSD sentiment
+
+dat_dict <- corp_aiact %>%
+  tokens() %>%
+  tokens_lookup(dictionary = data_dictionary_LSD2015,
+                nested_scope = "dictionary") %>%
+  dfm() %>%
+  convert(to = "data.frame")
+
+dat_dict
+
+# Prepare 
+dat_dict_pl <- dat_dict %>%
+  mutate(sentiment = log((positive + neg_positive + 0.5) /
+                           (negative + neg_positive + 0.5)))
+
+# Create a plot showing sentiment of the texts
+pl_senti <- ggplot(data = dat_dict_pl,
+                   aes(x = sentiment,
+                       y = reorder(doc_id, sentiment))) +
+  geom_point() +
+  labs(x = "Est sentiment",
+       y = "Document")
+
+pl_senti
+```
+
+
+```{r}
+### Positive & negative words
+
+# Positive
+dfm_pos <- corp_aiact %>%
+  tokens() %>%
+  tokens_keep(pattern = data_dictionary_LSD2015$positive) %>%
+  dfm()
+  
+# Negative
+dfm_neg <- corp_aiact %>%
+  tokens() %>%
+  tokens_keep(pattern = data_dictionary_LSD2015$negative) %>%
+  dfm()
+
+top_pos <- dfm_pos %>%
+  topfeatures(n = 10)
+top_pos
+
+top_neg <- dfm_neg %>%
+  topfeatures(n = 10)
+top_neg
+```
+
+
+```{r}
+### Wordfish
+
+tmod_wf <- textmodel_wordfish(dfm_act, dir = c(1,2))
+summary(tmod_wf)
+
+textplot_scale1d(tmod_wf, groups = dfm_act$doc_id)
+
+textplot_scale1d(tmod_wf, margin = "features",
+                 highlighted = c("ai", "system", "regulation",
+                                 "eu", "european", "conformity",
+                                 "commission", "surveillance", "natural",
+                                 "legal", "competent", "protection",
+                                 "budget", "appropriations", "world",
+                                 "learning", "prospective", "proposal"))
+```
